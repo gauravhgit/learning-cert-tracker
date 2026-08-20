@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning & Certification Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f5f5f3;
+      --color-background-info: #e6f1fb;
+      --color-background-success: #eaf3de;
+      --color-background-warning: #faeeda;
+      --color-background-danger: #fcebeb;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #5f5e5a;
+      --color-text-tertiary: #888780;
+      --color-text-info: #185fa5;
+      --color-text-success: #3b6d11;
+      --color-text-warning: #854f0b;
+      --color-text-danger: #a32d2d;
+      --color-border-tertiary: rgba(0,0,0,0.12);
+      --color-border-secondary: rgba(0,0,0,0.22);
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --font-sans: system-ui, -apple-system, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-background-primary: #1c1c1a;
+        --color-background-secondary: #2a2a27;
+        --color-background-info: #042c53;
+        --color-background-success: #173404;
+        --color-background-warning: #412402;
+        --color-background-danger: #501313;
+        --color-text-primary: #f0ede8;
+        --color-text-secondary: #b4b2a9;
+        --color-text-tertiary: #888780;
+        --color-text-info: #85b7eb;
+        --color-text-success: #97c459;
+        --color-text-warning: #ef9f27;
+        --color-text-danger: #f09595;
+        --color-border-tertiary: rgba(255,255,255,0.12);
+        --color-border-secondary: rgba(255,255,255,0.22);
+      }
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-background-secondary);
+      color: var(--color-text-primary);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 820px; margin: 0 auto; }
+
+    h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 1.5rem; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+    .tab { padding: 8px 16px; font-size: 14px; cursor: pointer; border: none; background: none; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+    .tab.active { color: var(--color-text-primary); border-bottom: 2px solid var(--color-text-primary); font-weight: 500; }
+    .tab:hover:not(.active) { color: var(--color-text-primary); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+    .stat { background: var(--color-background-primary); border-radius: var(--border-radius-md); padding: 14px 16px; border: 0.5px solid var(--color-border-tertiary); }
+    .stat-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+    .stat-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+    .stat-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+    .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+    .card-row { display: flex; align-items: center; gap: 12px; }
+    .card-icon { width: 38px; height: 38px; border-radius: var(--border-radius-md); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .card-body { flex: 1; min-width: 0; }
+    .card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+    .card-meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: var(--border-radius-md); font-weight: 500; }
+    .badge-blue { background: var(--color-background-info); color: var(--color-text-info); }
+    .badge-green { background: var(--color-background-success); color: var(--color-text-success); }
+    .badge-amber { background: var(--color-background-warning); color: var(--color-text-warning); }
+    .badge-gray { background: var(--color-background-secondary); color: var(--color-text-secondary); }
+
+    .progress-bar { height: 5px; background: var(--color-background-secondary); border-radius: 99px; margin-top: 8px; overflow: hidden; flex: 1; }
+    .progress-fill { height: 100%; border-radius: 99px; background: #378ADD; }
+    .progress-fill.green { background: #639922; }
+    .progress-fill.amber { background: #BA7517; }
+
+    .actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-sm { font-size: 12px; padding: 4px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: none; color: var(--color-text-secondary); cursor: pointer; }
+    .btn-sm:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+    .btn-primary { background: var(--color-text-primary); color: var(--color-background-primary); border: none; padding: 8px 16px; border-radius: var(--border-radius-md); font-size: 13px; cursor: pointer; font-weight: 500; }
+    .btn-primary:hover { opacity: 0.85; }
+
+    input, select, textarea {
+      font-size: 13px; font-family: var(--font-sans);
+      background: var(--color-background-primary);
+      color: var(--color-text-primary);
+      border: 0.5px solid var(--color-border-secondary);
+      border-radius: var(--border-radius-md);
+      padding: 8px 10px; width: 100%;
+    }
+    input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px var(--color-text-info); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--color-text-secondary); }
+
+    .cert-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-bottom: 10px; }
+    .cert-row { display: flex; align-items: flex-start; gap: 12px; }
+    .cert-badge { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+
+    .expiry-ok { color: var(--color-text-success); font-size: 12px; }
+    .expiry-warn { color: var(--color-text-warning); font-size: 12px; }
+    .expiry-exp { color: var(--color-text-danger); font-size: 12px; }
+
+    .chart-bar-wrap { margin-bottom: 10px; }
+    .chart-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .chart-track { height: 18px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; }
+    .chart-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; font-size: 11px; font-weight: 500; color: white; }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .section-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.5rem; width: 440px; max-width: 94vw; }
+    .modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1rem; color: var(--color-text-primary); }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 1rem; }
+
+    .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-chip { font-size: 12px; padding: 4px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: 99px; background: none; color: var(--color-text-secondary); cursor: pointer; }
+    .filter-chip.active { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+
+    .empty { text-align: center; padding: 2rem; color: var(--color-text-tertiary); font-size: 14px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    @media (max-width: 600px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Learning & Certification Tracker</h1>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button class="tab" onclick="showTab('courses',this)">Courses</button>
+    <button class="tab" onclick="showTab('certs',this)">Certifications</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="section active" id="tab-dashboard">
+    <div class="stat-grid" id="stats-grid"></div>
+    <div class="two-col">
+      <div>
+        <div class="section-title" style="margin-bottom:12px;">Progress by category</div>
+        <div id="category-chart"></div>
+      </div>
+      <div>
+        <div class="section-title" style="margin-bottom:12px;">Recent activity</div>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COURSES -->
+  <div class="section" id="tab-courses">
+    <div class="section-header">
+      <div class="filter-row">
+        <button class="filter-chip active" onclick="filterCourses('all',this)">All</button>
+        <button class="filter-chip" onclick="filterCourses('in-progress',this)">In progress</button>
+        <button class="filter-chip" onclick="filterCourses('completed',this)">Completed</button>
+        <button class="filter-chip" onclick="filterCourses('not-started',this)">Not started</button>
+      </div>
+      <button class="btn-primary" onclick="openModal('course')">+ Add course</button>
+    </div>
+    <div id="course-list"></div>
+  </div>
+
+  <!-- CERTS -->
+  <div class="section" id="tab-certs">
+    <div class="section-header">
+      <div></div>
+      <button class="btn-primary" onclick="openModal('cert')">+ Add certification</button>
+    </div>
+    <div id="cert-list"></div>
+  </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal-bg" id="modal-course">
+  <div class="modal">
+    <div class="modal-title">Add course</div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Course name</label>
+        <input type="text" id="c-name" placeholder="e.g. Machine Learning Fundamentals" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Provider</label>
+        <input type="text" id="c-provider" placeholder="e.g. Coursera" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="c-category">
+          <option>Cloud</option><option>Data & AI</option><option>Security</option>
+          <option>DevOps</option><option>Leadership</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="c-status">
+          <option value="not-started">Not started</option>
+          <option value="in-progress">In progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Progress (%)</label>
+        <input type="number" id="c-progress" min="0" max="100" value="0" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Due date (optional)</label>
+        <input type="date" id="c-due" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Hours estimate</label>
+        <input type="number" id="c-hours" min="0" placeholder="e.g. 12" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('course')">Cancel</button>
+      <button class="btn-primary" onclick="saveCourse()">Save course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Cert Modal -->
+<div class="modal-bg" id="modal-cert">
+  <div class="modal">
+    <div class="modal-title">Add certification</div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Certification name</label>
+        <input type="text" id="cert-name" placeholder="e.g. AWS Solutions Architect" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Issuer</label>
+        <input type="text" id="cert-issuer" placeholder="e.g. Amazon Web Services" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select id="cert-category">
+          <option>Cloud</option><option>Data & AI</option><option>Security</option>
+          <option>DevOps</option><option>Leadership</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Date earned</label>
+        <input type="date" id="cert-earned" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expiry date (if applicable)</label>
+        <input type="date" id="cert-expiry" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <label class="form-label">Credential ID / URL (optional)</label>
+        <input type="text" id="cert-url" placeholder="https://..." />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('cert')">Cancel</button>
+      <button class="btn-primary" onclick="saveCert()">Save certification</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ICONS = { 'Cloud':'☁️','Data & AI':'🤖','Security':'🔒','DevOps':'⚙️','Leadership':'🌟','Other':'📚' };
+  const COLORS = { 'Cloud':'#378ADD','Data & AI':'#7F77DD','Security':'#D85A30','DevOps':'#1D9E75','Leadership':'#D4537E','Other':'#888780' };
+
+  const STORAGE_KEY = 'lct_data_v1';
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return {
+      courses: [
+        {id:1,name:'AWS Cloud Practitioner Essentials',provider:'AWS Training',category:'Cloud',status:'completed',progress:100,due:'',hours:12,added:'2025-10-01'},
+        {id:2,name:'Machine Learning Crash Course',provider:'Google',category:'Data & AI',status:'in-progress',progress:65,due:'2026-06-15',hours:20,added:'2026-01-10'},
+        {id:3,name:'Kubernetes for Developers',provider:'Linux Foundation',category:'DevOps',status:'in-progress',progress:30,due:'2026-07-01',hours:15,added:'2026-02-20'},
+        {id:4,name:'CompTIA Security+ Prep',provider:'Udemy',category:'Security',status:'not-started',progress:0,due:'2026-09-01',hours:40,added:'2026-04-01'},
+      ],
+      certs: [
+        {id:1,name:'AWS Cloud Practitioner',issuer:'Amazon Web Services',category:'Cloud',earned:'2025-11-15',expiry:'2028-11-15',url:''},
+        {id:2,name:'Google Analytics Certified',issuer:'Google',category:'Data & AI',earned:'2024-05-20',expiry:'2025-05-20',url:''},
+      ],
+      nextCourseId: 5,
+      nextCertId: 3,
+      courseFilter: 'all'
+    };
+  }
+
+  let state = loadState();
+
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function showTab(t, el) {
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.getElementById('tab-'+t).classList.add('active');
+    el.classList.add('active');
+    render();
+  }
+
+  function openModal(type) { document.getElementById('modal-'+type).classList.add('open'); }
+  function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
+
+  function saveCourse() {
+    const name = document.getElementById('c-name').value.trim();
+    if (!name) return;
+    const prog = Math.min(100, Math.max(0, parseInt(document.getElementById('c-progress').value)||0));
+    const status = document.getElementById('c-status').value;
+    state.courses.push({
+      id: state.nextCourseId++,
+      name,
+      provider: document.getElementById('c-provider').value.trim(),
+      category: document.getElementById('c-category').value,
+      status: prog === 100 ? 'completed' : status,
+      progress: prog,
+      due: document.getElementById('c-due').value,
+      hours: parseInt(document.getElementById('c-hours').value)||0,
+      added: new Date().toISOString().split('T')[0]
+    });
+    closeModal('course');
+    ['c-name','c-provider','c-due','c-hours','c-progress'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('c-status').value='not-started';
+    saveState(); render();
+  }
+
+  function saveCert() {
+    const name = document.getElementById('cert-name').value.trim();
+    if (!name) return;
+    state.certs.push({
+      id: state.nextCertId++,
+      name,
+      issuer: document.getElementById('cert-issuer').value.trim(),
+      category: document.getElementById('cert-category').value,
+      earned: document.getElementById('cert-earned').value,
+      expiry: document.getElementById('cert-expiry').value,
+      url: document.getElementById('cert-url').value.trim()
+    });
+    closeModal('cert');
+    ['cert-name','cert-issuer','cert-earned','cert-expiry','cert-url'].forEach(id=>document.getElementById(id).value='');
+    saveState(); render();
+  }
+
+  function deleteCourse(id) { state.courses = state.courses.filter(c=>c.id!==id); saveState(); render(); }
+  function deleteCert(id) { state.certs = state.certs.filter(c=>c.id!==id); saveState(); render(); }
+
+  function updateProgress(id, val) {
+    const c = state.courses.find(x=>x.id===id);
+    if (c) { c.progress=val; c.status=val===100?'completed':val>0?'in-progress':'not-started'; }
+    saveState(); render();
+  }
+
+  function filterCourses(f, el) {
+    state.courseFilter = f;
+    document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    render();
+  }
+
+  function expiryStatus(expiry) {
+    if (!expiry) return null;
+    const d = new Date(expiry), now = new Date();
+    const days = Math.round((d-now)/(1000*60*60*24));
+    if (days < 0) return {cls:'expiry-exp', text:'Expired'};
+    if (days < 90) return {cls:'expiry-warn', text:`Expires in ${days} days`};
+    return {cls:'expiry-ok', text:`Valid until ${d.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`};
+  }
+
+  function render() { renderStats(); renderCategoryChart(); renderRecent(); renderCourses(); renderCerts(); }
+
+  function renderStats() {
+    const total = state.courses.length;
+    const completed = state.courses.filter(c=>c.status==='completed').length;
+    const inProgress = state.courses.filter(c=>c.status==='in-progress').length;
+    const avgProgress = total ? Math.round(state.courses.reduce((a,c)=>a+c.progress,0)/total) : 0;
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat"><div class="stat-label">Total courses</div><div class="stat-val">${total}</div><div class="stat-sub">${inProgress} in progress</div></div>
+      <div class="stat"><div class="stat-label">Completed</div><div class="stat-val">${completed}</div><div class="stat-sub">${total ? Math.round(completed/total*100) : 0}% rate</div></div>
+      <div class="stat"><div class="stat-label">Avg progress</div><div class="stat-val">${avgProgress}%</div><div class="stat-sub">across all courses</div></div>
+      <div class="stat"><div class="stat-label">Certifications</div><div class="stat-val">${state.certs.length}</div><div class="stat-sub">earned</div></div>
+    `;
+  }
+
+  function renderCategoryChart() {
+    const cats = ['Cloud','Data & AI','Security','DevOps','Leadership','Other'];
+    const el = document.getElementById('category-chart');
+    const catData = cats.map(cat => {
+      const courses = state.courses.filter(c=>c.category===cat);
+      return { cat, count: courses.length, avg: courses.length ? Math.round(courses.reduce((a,c)=>a+c.progress,0)/courses.length) : 0 };
+    }).filter(d=>d.count>0);
+    if (!catData.length) { el.innerHTML = '<div class="empty">No courses yet</div>'; return; }
+    el.innerHTML = catData.map(d=>`
+      <div class="chart-bar-wrap">
+        <div class="chart-label"><span>${d.cat} (${d.count})</span><span>${d.avg}%</span></div>
+        <div class="chart-track">
+          <div class="chart-fill" style="width:${d.avg}%;background:${COLORS[d.cat]}">${d.avg > 15 ? d.avg+'%' : ''}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderRecent() {
+    const el = document.getElementById('recent-list');
+    const sorted = [...state.courses].sort((a,b)=>b.id-a.id).slice(0,4);
+    if (!sorted.length) { el.innerHTML = '<div class="empty">No courses yet</div>'; return; }
+    el.innerHTML = sorted.map(c=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+        <span style="font-size:16px">${ICONS[c.category]||'📚'}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">${c.progress}% complete</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderCourses() {
+    const el = document.getElementById('course-list');
+    let courses = state.courses;
+    if (state.courseFilter !== 'all') courses = courses.filter(c=>c.status===state.courseFilter);
+    if (!courses.length) { el.innerHTML = '<div class="empty">No courses here yet</div>'; return; }
+    const statusBadge = s => s==='completed'?'badge-green':s==='in-progress'?'badge-blue':'badge-gray';
+    const statusLabel = s => s==='completed'?'Completed':s==='in-progress'?'In progress':'Not started';
+    el.innerHTML = courses.map(c=>`
+      <div class="card">
+        <div class="card-row">
+          <div class="card-icon" style="background:${COLORS[c.category]}22">${ICONS[c.category]||'📚'}</div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span class="card-title">${c.name}</span>
+              <span class="badge ${statusBadge(c.status)}">${statusLabel(c.status)}</span>
+            </div>
+            <div class="card-meta">${c.provider||''}${c.provider&&c.category?' · ':''}${c.category}${c.due?' · Due '+new Date(c.due).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):''}${c.hours?' · '+c.hours+'h':''}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <div class="progress-bar"><div class="progress-fill ${c.status==='completed'?'green':c.progress>50?'':'amber'}" style="width:${c.progress}%"></div></div>
+              <span style="font-size:12px;color:var(--color-text-secondary);min-width:32px">${c.progress}%</span>
+              <input type="range" min="0" max="100" step="1" value="${c.progress}" style="width:80px" oninput="updateProgress(${c.id},parseInt(this.value))" />
+            </div>
+          </div>
+          <button class="btn-sm" onclick="deleteCourse(${c.id})">Remove</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderCerts() {
+    const el = document.getElementById('cert-list');
+    if (!state.certs.length) { el.innerHTML = '<div class="empty">No certifications yet — add one above</div>'; return; }
+    el.innerHTML = state.certs.map(c=>{
+      const exp = expiryStatus(c.expiry);
+      return `
+        <div class="cert-card">
+          <div class="cert-row">
+            <div class="cert-badge" style="background:${COLORS[c.category]||'#378ADD'}22">${ICONS[c.category]||'🏅'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:14px;font-weight:500;color:var(--color-text-primary)">${c.name}</span>
+                <span class="badge badge-blue">${c.category}</span>
+              </div>
+              <div style="font-size:12px;color:var(--color-text-secondary);margin-top:2px">${c.issuer||''}${c.earned?' · Earned '+new Date(c.earned).toLocaleDateString('en-US',{month:'short',year:'numeric'}):''}</div>
+              ${exp ? `<div class="${exp.cls}" style="margin-top:4px">${exp.text}</div>` : ''}
+              ${c.url ? `<a href="${c.url}" target="_blank" style="font-size:12px;color:var(--color-text-info);text-decoration:none;display:inline-block;margin-top:4px">View credential ↗</a>` : ''}
+            </div>
+            <button class="btn-sm" onclick="deleteCert(${c.id})">Remove</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.querySelectorAll('.modal-bg').forEach(m=>{
+    m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open'); });
+  });
+
+  render();
+</script>
+</body>
+</html>
