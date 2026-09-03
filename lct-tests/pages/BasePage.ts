@@ -24,7 +24,6 @@ export class BasePage {
     return (await stat.locator('.stat-val').textContent()) ?? '';
   }
 
-  /** Clear localStorage so each test starts with a blank state */
   async clearStorage() {
     await this.page.evaluate(() => localStorage.clear());
     await this.page.reload();

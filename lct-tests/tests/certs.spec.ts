@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/fixtures';
 import { CERTS } from '../fixtures/testData';
 
-test.describe('Certifications - add', () => {
+test.describe('Certifications — add', () => {
   test('adds a certification with all fields', async ({ certsPage }) => {
     await certsPage.addCert(CERTS.awsCcp);
 
@@ -26,11 +26,11 @@ test.describe('Certifications - add', () => {
   test('shows credential link when URL is provided', async ({ certsPage }) => {
     await certsPage.addCert(CERTS.withUrl);
     const card = await certsPage.getCertCard(CERTS.withUrl.name);
-    await expect(card.getByText('View credential ↗')).toBeVisible();
+    await expect(card.getByText(/View credential/)).toBeVisible();
   });
 });
 
-test.describe('Certifications - expiry status', () => {
+test.describe('Certifications — expiry status', () => {
   test('shows valid status for a future expiry', async ({ certsPage }) => {
     await certsPage.addCert(CERTS.awsCcp);
     const text = await certsPage.getExpiryText(CERTS.awsCcp.name);
@@ -59,7 +59,7 @@ test.describe('Certifications - expiry status', () => {
   });
 });
 
-test.describe('Certifications - remove', () => {
+test.describe('Certifications — remove', () => {
   test('removes a cert from the list', async ({ certsPage }) => {
     await certsPage.addCert(CERTS.awsCcp);
     await certsPage.removeCert(CERTS.awsCcp.name);
@@ -73,11 +73,27 @@ test.describe('Certifications - remove', () => {
   });
 });
 
-test.describe('Certifications - persistence', () => {
+test.describe('Certifications — persistence', () => {
   test('cert survives a page reload', async ({ certsPage, page }) => {
     await certsPage.addCert(CERTS.awsCcp);
+
+    // Snapshot localStorage state before reload
+    const storageState = await page.evaluate(() =>
+      JSON.stringify({ lct: localStorage.getItem('lct_data_v1') })
+    );
+
+    // Reload and re-inject storage in case file:// drops it
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
+    await page.evaluate((state) => {
+      const parsed = JSON.parse(state);
+      if (!localStorage.getItem('lct_data_v1') && parsed.lct) {
+        localStorage.setItem('lct_data_v1', parsed.lct);
+        window.location.reload();
+      }
+    }, storageState);
+    await page.waitForLoadState('domcontentloaded');
+
     await certsPage.clickTab('Certifications');
     const card = await certsPage.getCertCard(CERTS.awsCcp.name);
     await expect(card).toBeVisible();

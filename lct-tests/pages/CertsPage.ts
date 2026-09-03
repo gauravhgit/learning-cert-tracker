@@ -5,8 +5,8 @@ export interface CertInput {
   name: string;
   issuer?: string;
   category?: 'Cloud' | 'Data & AI' | 'Security' | 'DevOps' | 'Leadership' | 'Other';
-  earnedDate?: string;   // YYYY-MM-DD
-  expiryDate?: string;   // YYYY-MM-DD
+  earnedDate?: string;
+  expiryDate?: string;
   url?: string;
 }
 
@@ -48,11 +48,11 @@ export class CertsPage extends BasePage {
 
   async fillCertForm(cert: CertInput) {
     await this.nameInput.fill(cert.name);
-    if (cert.issuer)      await this.issuerInput.fill(cert.issuer);
-    if (cert.category)    await this.categorySelect.selectOption(cert.category);
-    if (cert.earnedDate)  await this.earnedInput.fill(cert.earnedDate);
-    if (cert.expiryDate)  await this.expiryInput.fill(cert.expiryDate);
-    if (cert.url)         await this.urlInput.fill(cert.url);
+    if (cert.issuer)     await this.issuerInput.fill(cert.issuer);
+    if (cert.category)   await this.categorySelect.selectOption(cert.category);
+    if (cert.earnedDate) await this.earnedInput.fill(cert.earnedDate);
+    if (cert.expiryDate) await this.expiryInput.fill(cert.expiryDate);
+    if (cert.url)        await this.urlInput.fill(cert.url);
   }
 
   async addCert(cert: CertInput) {

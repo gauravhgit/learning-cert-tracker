@@ -24,8 +24,8 @@ test.describe('Dashboard', () => {
   test('completed count increments correctly', async ({ page, basePage }) => {
     const courses = new CoursesPage(page);
     await courses.clickTab('Courses');
-    await courses.addCourse(COURSES.mlCrash);        // completed
-    await courses.addCourse(COURSES.cloudBasics);    // in-progress
+    await courses.addCourse(COURSES.mlCrash);
+    await courses.addCourse(COURSES.cloudBasics);
     await courses.clickTab('Dashboard');
 
     expect(await basePage.getStatValue('Total courses')).toBe('2');

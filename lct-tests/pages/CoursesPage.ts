@@ -7,7 +7,7 @@ export interface CourseInput {
   category?: 'Cloud' | 'Data & AI' | 'Security' | 'DevOps' | 'Leadership' | 'Other';
   status?: 'not-started' | 'in-progress' | 'completed';
   progress?: number;
-  dueDate?: string;   // YYYY-MM-DD
+  dueDate?: string;
   hours?: number;
 }
 
@@ -27,18 +27,18 @@ export class CoursesPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.modal       = page.locator('#modal-course');
-    this.addButton   = page.getByRole('button', { name: '+ Add course' });
-    this.nameInput   = page.locator('#c-name');
+    this.modal          = page.locator('#modal-course');
+    this.addButton      = page.getByRole('button', { name: '+ Add course' });
+    this.nameInput      = page.locator('#c-name');
     this.providerInput  = page.locator('#c-provider');
     this.categorySelect = page.locator('#c-category');
     this.statusSelect   = page.locator('#c-status');
     this.progressInput  = page.locator('#c-progress');
     this.dueDateInput   = page.locator('#c-due');
     this.hoursInput     = page.locator('#c-hours');
-    this.saveButton  = page.getByRole('button', { name: 'Save course' });
-    this.cancelButton = page.getByRole('button', { name: 'Cancel' }).first();
-    this.courseList  = page.locator('#course-list');
+    this.saveButton     = page.getByRole('button', { name: 'Save course' });
+    this.cancelButton   = page.getByRole('button', { name: 'Cancel' }).first();
+    this.courseList     = page.locator('#course-list');
   }
 
   async navigateToCourses() {
@@ -53,14 +53,12 @@ export class CoursesPage extends BasePage {
 
   async fillCourseForm(course: CourseInput) {
     await this.nameInput.fill(course.name);
-    if (course.provider)  await this.providerInput.fill(course.provider);
-    if (course.category)  await this.categorySelect.selectOption(course.category);
-    if (course.status)    await this.statusSelect.selectOption(course.status);
-    if (course.progress !== undefined) {
-      await this.progressInput.fill(String(course.progress));
-    }
-    if (course.dueDate)  await this.dueDateInput.fill(course.dueDate);
-    if (course.hours !== undefined) await this.hoursInput.fill(String(course.hours));
+    if (course.provider)              await this.providerInput.fill(course.provider);
+    if (course.category)              await this.categorySelect.selectOption(course.category);
+    if (course.status)                await this.statusSelect.selectOption(course.status);
+    if (course.progress !== undefined) await this.progressInput.fill(String(course.progress));
+    if (course.dueDate)               await this.dueDateInput.fill(course.dueDate);
+    if (course.hours !== undefined)   await this.hoursInput.fill(String(course.hours));
   }
 
   async addCourse(course: CourseInput) {
@@ -91,7 +89,6 @@ export class CoursesPage extends BasePage {
   }
 
   async getVisibleCourseNames(): Promise<string[]> {
-    const titles = this.courseList.locator('.card-title');
-    return titles.allTextContents();
+    return this.courseList.locator('.card-title').allTextContents();
   }
 }

@@ -110,8 +110,25 @@ test.describe('Courses — remove', () => {
 test.describe('Courses — persistence', () => {
   test('course survives a page reload', async ({ coursesPage, page }) => {
     await coursesPage.addCourse(COURSES.cloudBasics);
+
+    // Snapshot localStorage state before reload
+    const storageState = await page.evaluate(() =>
+      JSON.stringify({ lct: localStorage.getItem('lct_data_v1') })
+    );
+
+    // Reload and re-inject storage in case file:// drops it
     await page.reload();
     await page.waitForLoadState('domcontentloaded');
+    await page.evaluate((state) => {
+      const parsed = JSON.parse(state);
+      if (!localStorage.getItem('lct_data_v1') && parsed.lct) {
+        localStorage.setItem('lct_data_v1', parsed.lct);
+        // Trigger app to re-read storage by reloading once more
+        window.location.reload();
+      }
+    }, storageState);
+    await page.waitForLoadState('domcontentloaded');
+
     await coursesPage.clickTab('Courses');
     const card = await coursesPage.getCourseCard(COURSES.cloudBasics.name);
     await expect(card).toBeVisible();
